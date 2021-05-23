@@ -1,0 +1,23 @@
+.nav ul{
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  overflow: hidden;
+}
+
+.nav li {
+  float: left;
+}
+
+.nav a {
+  display: block;
+  color: white;
+  text-align: center;
+  margin-left: 2rem;
+  margin-top: 2rem;
+  text-decoration: none;
+  float: left;
+}
+.nav img {
+  width: 15rem;
+}

@@ -1,0 +1,86 @@
+.container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.containerLeft {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 30rem;
+}
+
+.containerRight {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 35rem;
+  justify-content: flex-start;
+  flex-direction: column;
+  margin: 2rem
+}
+
+.prodName {
+  font-size: 2rem;
+}
+
+.price {
+  font-size: 2.3rem;
+}
+
+.addToCartBtn {
+  height: 2.5rem;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 2rem;
+  width: 20rem;
+  color: white;
+  background-color: #2e2e2e;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+.addToCartBtn:hover {
+  background-color: #ffffff;
+  color: #2e2e2e;
+  border-color: #2e2e2e;
+  border: solid;
+  transition: .7s;
+}
+
+.quantityContainer{
+  height: 2.5rem;
+  font-size: 1.3rem;
+  background-color: #ffffff;
+  border: solid;
+  border-radius: 2rem;
+  width: 8rem;
+  text-align: center;
+  color: #2e2e2e;
+  display: flex;
+  justify-content: space-around;
+  background-color: #ffffff;
+}
+
+.quantityBtn{
+  font-size: 1.3rem;
+  color: #2e2e2e;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.actionContainer {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.quantityInput {
+  width: 2rem;
+  background-color: transparent;
+  border: none;
+  text-align: center;
+  font-size: 1.3rem;
+}

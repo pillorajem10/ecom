@@ -1,0 +1,9 @@
+.nav {
+  list-style-type: none;
+}
+
+.nav li img {
+  width: 3.5rem;
+  float: left;
+  margin-left: -2rem;
+}
