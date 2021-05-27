@@ -76,10 +76,14 @@ const useStyles = makeStyles((theme) => ({
 const ProductDetails = ({ product }) => {
   const [quantity, setQuantity] = useState(1);
   const [productList, setProductList] = useState([]);
+  const [reviewList, setReviewList] = useState([]);
+  const [pageDetails, setPageDetails] = useState(null);
+  const [pageSize] = useState(5);
 
   const lowReso = useMediaQuery('(max-width: 519px)');
 
-  const { loading, error} = useSelector(state => state.productDetails);
+  const { loading, error } = useSelector(state => state.productDetails);
+  const { loadingReviews, errorReviews  } = useSelector(state => state.reviewList);
 
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -100,6 +104,25 @@ const ProductDetails = ({ product }) => {
       setQuantity(quantity - 1)
     }
   }
+
+  const handleReviewsList = useCallback(
+    (pageIndex = 1) => {
+      dispatch(ecom.product.listReviews(product._id, pageIndex, pageSize))
+        .then((data) => {
+          if (data) {
+            setReviewList(data.docs);
+            console.log('[[DOCSHIT]]', data.docs)
+            setPageDetails({
+              pageIndex: data.page,
+              pageSize: data.limit,
+              totalPages: data.totalPages,
+              totalDocs: data.totalDocs
+            });
+          }
+        })
+    },
+    [dispatch, pageSize, product._id],
+  );
 
   const handleProductList = useCallback(
     () => {
@@ -125,6 +148,10 @@ const ProductDetails = ({ product }) => {
   useEffect(() => {
     handleProductList();
   }, [handleProductList]);
+
+  useEffect(() => {
+    handleReviewsList();
+  }, [handleReviewsList]);
 
   return (
     loading? <center className='loading1' ><CircularProgress color = 'inherit' /></center> : error ? <div>{error}</div> :
@@ -191,6 +218,29 @@ const ProductDetails = ({ product }) => {
           </div>
         </Card>
       </div>
+
+      {/*reviews section*/}
+      <center style={{fontSize: "2rem", marginTop: "4rem"}}>Reviews</center>
+      <div>
+      { reviewList.length > 0 ? (
+        <>
+          {
+           reviewList.map((review, idx) =>
+            <>
+              <div key={idx}>
+                <div>{review.userId[0].full_name}</div>
+                <div>{review.comment}</div>
+              </div>
+            </>
+            )
+           }
+         </>
+      ) : (
+        <center style = {{fontSize: '1rem'}} >No reviews found</center>
+      ) }
+      </div>
+
+      {/*other products*/}
       <center style={{fontSize: "2rem", marginTop: "4rem"}}>Other products</center>
       <div className={styles.containerProductList}>
         { productList.length > 0 ? (
@@ -199,7 +249,7 @@ const ProductDetails = ({ product }) => {
              productList.map((productList, idx) =>
               <>
                { lowReso ?
-                 <Link href = {`/product/${productList._id}`} key={idx}> 
+                 <Link href = {`/product/${productList._id}`} key={idx}>
                    <Card key={productList.name} className={classes.root}>
                       <CardMedia
                         component="img"
@@ -259,7 +309,7 @@ const ProductDetails = ({ product }) => {
              }
            </>
         ) : (
-          <div style = {{fontSize: '4rem'}} >No productList found</div>
+          <div style = {{fontSize: '4rem'}} >No product found</div>
         ) }
       </div>
     </>
