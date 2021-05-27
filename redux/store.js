@@ -2,12 +2,22 @@ import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import thunk from 'redux-thunk'
 import { productListReducer, productDetailsReducer } from './reducers/productReducer';
+import { userRegisterReducer, userLoginReducer } from './reducers/userReducer';
+import Cookie from 'js-cookie';
 
-const initialState = {};
+const user = Cookie.getJSON('user');
+const userInfo = Cookie.getJSON('userInfo');
+
+const initialState = {
+  userSignin: { user },
+  userRegister: { userInfo },
+};
 
 const reducer = combineReducers({
   productList: productListReducer,
-  productDetails: productDetailsReducer
+  productDetails: productDetailsReducer,
+  userRegister: userRegisterReducer,
+  userSignin: userLoginReducer,
 });
 
 //const composeEnhancer = compose;

@@ -7,6 +7,10 @@ import PropTypes from 'prop-types';
 //navigation
 import Link from 'next/link';
 
+//redux
+import { ecom } from '../redux/combineActions';
+import { useSelector, useDispatch } from 'react-redux';
+
 //material-ui
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -37,10 +41,18 @@ HideOnScroll.propTypes = {
 };
 
 const HideAppBar = () => {
+  const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.userSignin);
+  const { userInfo } = useSelector((state) => state.userRegister);
+
+  const handleLogout = () => {
+    dispatch(ecom.user.logout());
+  };
 
   return (
     <React.Fragment>
-      <nav  className={styles.nav}>
+      <nav className={styles.nav}>
       <HideOnScroll>
         <AppBar style={{ background: '#2E2E2E' }}>
           <Toolbar>
@@ -56,6 +68,17 @@ const HideAppBar = () => {
               <li>
                 <Link href="/">Home</Link>
               </li>
+              {
+                user || userInfo ? (
+                  <li onClick={handleLogout}>
+                    <Link href="/signin">Sign-Out</Link>
+                  </li>
+                ) : (
+                  <li>
+                    <Link href="/signin">Sign-In</Link>
+                  </li>
+                )
+              }
             </ul>
           </Toolbar>
         </AppBar>

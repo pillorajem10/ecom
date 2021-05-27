@@ -1,0 +1,14 @@
+.mainContainer {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  flex-direction:column;
+}
+
+.formContainer {
+  max-width: 30rem;
+  text-align: center;
+  flex-direction:column;
+  margin: 2rem
+}
