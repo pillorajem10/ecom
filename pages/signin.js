@@ -61,13 +61,13 @@ const Signup = () => {
   const router = useRouter()
 
   const [values, setValues] = useState({
-    email: '',
+    unameoremail: '',
     password: '',
     showPassword: false,
   });
   const [openSnackBar, setOpenSnackBar] = useState(false);
 
-  const { email, password } = values;
+  const { unameoremail, password } = values;
   const { loading, user, error } = useSelector(state => state.userSignin);
   const { userInfo } = useSelector(state => state.userRegister);
 
@@ -82,7 +82,11 @@ const Signup = () => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    dispatch(ecom.user.login(email, password));
+    if (values.unameoremail.includes('@')) {
+      dispatch(ecom.user.loginWithEmail(unameoremail, password));
+    } else {
+      dispatch(ecom.user.loginWithUname(unameoremail, password));
+    }
     setOpenSnackBar(true);
   }
 
@@ -122,15 +126,14 @@ const Signup = () => {
         <form onSubmit = {submitHandler} className={styles.formContainer}>
           <center style={{fontSize: "1.5rem"}}>Sign In</center>
           <FormControl className={(classes.margin, classes.textField)}>
-            <InputLabel color="primary">Email</InputLabel>
+            <InputLabel color="primary">Email or Username</InputLabel>
             <Input
               color="primary"
-              id="email"
-              type='email'
-              name='email'
-              required
-              value={values.email}
-              onChange={handleChange('email')}
+              id="unameoremail"
+              type='text'
+              name='unameoremail'
+              require
+              onChange={handleChange('unameoremail')}
             />
           </FormControl>
           <FormControl className={(classes.margin, classes.textField)}>
@@ -141,7 +144,6 @@ const Signup = () => {
                 name="password"
                 required
                 type={values.showPassword ? 'text' : 'password'}
-                value={values.password}
                 onChange={handleChange('password')}
                 endAdornment={
                   <InputAdornment position="end">
@@ -156,8 +158,8 @@ const Signup = () => {
                 }
             /  >
           </FormControl>
-          <Button style = {{marginTop: '5%'}} variant="contained" type="submit">Sign Up</Button>
-          <div style = {{marginTop: '5%', fontSize:20}}>Have an account? <Link style = {{color: 'gray', textDecoration:'none'}} href = '/signin'>Sign In</Link></div>
+          <Button style = {{marginTop: '5%'}} variant="contained" type="submit">Sign In</Button>
+          <div style = {{marginTop: '5%', fontSize:20}}>Dont have an account? <Link href = '/signup'><a style= {{color: 'orange', textDecoration:'none'}} >Sign Up</a></Link></div>
         </form>
       </div>
     </>

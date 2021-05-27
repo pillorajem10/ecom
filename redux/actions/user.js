@@ -13,7 +13,18 @@ export const register = (fname, mname, lname, email, uname, password, password2)
   }
 }
 
-export const login = (email, password) => async (dispatch) => {
+export const loginWithUname = (uname, password) => async (dispatch) => {
+  dispatch({ type: types.USER_SIGNIN_REQUEST, payload: { uname, password } });
+  try {
+    const { data } = await axios.post('/api/auth/signin', { uname, password });
+    dispatch({ type: types.USER_SIGNIN_SUCCESS, payload: data });
+    Cookie.set('user', JSON.stringify(data));
+  } catch (error) {
+    dispatch({ type: types.USER_SIGNIN_FAIL, payload: error.response.data.error });
+  }
+}
+
+export const loginWithEmail = (email, password) => async (dispatch) => {
   dispatch({ type: types.USER_SIGNIN_REQUEST, payload: { email, password } });
   try {
     const { data } = await axios.post('/api/auth/signin', { email, password });

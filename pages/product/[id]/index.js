@@ -196,10 +196,10 @@ const ProductDetails = ({ product }) => {
         { productList.length > 0 ? (
           <>
             {
-             productList.map( productList =>
+             productList.map((productList, idx) =>
               <>
                { lowReso ?
-                 <Link href = {`/product/${productList._id}`}>
+                 <Link href = {`/product/${productList._id}`} key={idx}> 
                    <Card key={productList.name} className={classes.root}>
                       <CardMedia
                         component="img"
@@ -224,7 +224,7 @@ const ProductDetails = ({ product }) => {
                   </Link>
                   :
 
-                  <Link href = {`/product/${productList._id}`}>
+                  <Link href = {`/product/${productList._id}`} key={idx}>
                     <Card key={productList.name} className={classes.root1}>
                         <CardMedia
                           component="img"

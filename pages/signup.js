@@ -233,7 +233,7 @@ const Signup = () => {
               />
           </FormControl>
           <Button style = {{marginTop: '5%'}} variant="contained" type="submit">Sign Up</Button>
-          <div style = {{marginTop: '5%', fontSize:20}}>Have an account? <Link style = {{color: 'gray', textDecoration:'none'}} href = '/signin'>Sign In</Link></div>
+          <div style = {{marginTop: '5%', fontSize:20}}>Have an account? <Link href = '/signin'><a style = {{color: 'orange', textDecoration:'none'}} >Sign In</a></Link></div>
         </form>
       </div>
     </>

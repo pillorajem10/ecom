@@ -105,10 +105,10 @@ const Home = () => {
         { products.length > 0 ? (
           <>
             {
-             products.map( products =>
+             products.map((products, idx) =>
               <>
                { lowReso ?
-                 <Link href = {`/product/${products._id}`}>
+                 <Link href = {`/product/${products._id}`} key={idx}>
                    <Card key={products.name} className={classes.root}>
                       <CardMedia
                         component="img"
@@ -133,7 +133,7 @@ const Home = () => {
                   </Link>
                   :
 
-                  <Link href = {`/product/${products._id}`}>
+                  <Link href = {`/product/${products._id}`} key={idx}>
                     <Card key={products.name} className={classes.root1}>
                         <CardMedia
                           component="img"
