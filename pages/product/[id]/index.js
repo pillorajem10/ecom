@@ -15,20 +15,26 @@ import { useRouter } from 'next/router';
 import styles from '../../../styles/Details.module.css'
 
 //material-ui
-//import Button from '@material-ui/core/Button';
 import Rating from '@material-ui/lab/Rating';
 import CircularProgress from '@material-ui/core/CircularProgress';
-//import Alert from '@material-ui/lab/Alert';
-//import Snackbar from '@material-ui/core/Snackbar';
-//import FormControl from '@material-ui/core/FormControl';
-//import TextField from '@material-ui/core/TextField';
+import Alert from '@material-ui/lab/Alert';
+import Snackbar from '@material-ui/core/Snackbar';
 import CardMedia from '@material-ui/core/CardMedia';
 import CardContent from '@material-ui/core/CardContent';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import { makeStyles } from '@material-ui/core/styles';
+import FormControl from '@material-ui/core/FormControl';
+import TextField from '@material-ui/core/TextField';
+import DeleteIcon from '@material-ui/icons/Delete';
+import Button from '@material-ui/core/Button';
+import EditIcon from '@material-ui/icons/Edit';
+import Pagination from "@material-ui/lab/Pagination";
 import { useMediaQuery } from '@material-ui/core';
+
+//moment
+import moment from 'moment';
 
 //styling for material-ui
 const useStyles = makeStyles((theme) => ({
@@ -38,6 +44,7 @@ const useStyles = makeStyles((theme) => ({
     flexWrap: 'wrap',
     maxWidth: '30rem'
   },
+ */
   margin: {
     margin: theme.spacing(1),
   },
@@ -45,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(3),
   },
   textField: {
-    width: '100%',
+    width: '50%',
     '& label.Mui-focused': {
       color: '#FF3F16',
     },
@@ -55,7 +62,6 @@ const useStyles = makeStyles((theme) => ({
         },
     },
   },
-  */
   root: {
     maxHeight: "17rem",
     maxWidth: "8rem",
@@ -78,12 +84,19 @@ const ProductDetails = ({ product }) => {
   const [productList, setProductList] = useState([]);
   const [reviewList, setReviewList] = useState([]);
   const [pageDetails, setPageDetails] = useState(null);
+  const [pageDetailsReview, setPageDetailsReview] = useState(null);
   const [pageSize] = useState(5);
+  const [comment, setComment] = useState('');
+  const [rating, setRating] = useState(1);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
 
   const lowReso = useMediaQuery('(max-width: 519px)');
 
   const { loading, error } = useSelector(state => state.productDetails);
   const { loadingReviews, errorReviews  } = useSelector(state => state.reviewList);
+  const { loadingAddRev, errorAddRev, success: recipeReviewSave } = useSelector((state) => state.reviewAdd);
+  const { user } = useSelector(state => state.userSignin);
+  const { userInfo } = useSelector(state => state.userRegister);
 
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -111,7 +124,25 @@ const ProductDetails = ({ product }) => {
         .then((data) => {
           if (data) {
             setReviewList(data.docs);
-            console.log('[[DOCSHIT]]', data.docs)
+            setPageDetailsReview({
+              pageIndex: data.page,
+              pageSize: data.limit,
+              totalPages: data.totalPages,
+              totalDocs: data.totalDocs
+            });
+            console.log('[[PAGE DETAILS]]', pageDetailsReview)
+          }
+        })
+    },
+    [dispatch, pageSize, product._id],
+  );
+
+  const handleProductList = useCallback(
+    (pageIndex = 1) => {
+      dispatch(ecom.product.relatedProducts(pageIndex, pageSize, product.category._id))
+        .then((data) => {
+          if (data) {
+            setProductList(data.docs);
             setPageDetails({
               pageIndex: data.page,
               pageSize: data.limit,
@@ -121,25 +152,12 @@ const ProductDetails = ({ product }) => {
           }
         })
     },
-    [dispatch, pageSize, product._id],
-  );
-
-  const handleProductList = useCallback(
-    () => {
-      dispatch(ecom.product.listProduct())
-        .then((data) => {
-          if (data) {
-            setProductList(data);
-          }
-        })
-    },
-    [dispatch],
+    [dispatch, pageSize, product.category._id],
   );
 
 
   useEffect(() => {
     dispatch(ecom.product.detailsProduct(product._id));
-    console.log('QUANTITY', quantity)
     return () => {
       //
     };
@@ -150,11 +168,64 @@ const ProductDetails = ({ product }) => {
   }, [handleProductList]);
 
   useEffect(() => {
+    console.log('REBYUUUUUUU EPEK LOL')
     handleReviewsList();
   }, [handleReviewsList]);
 
+  const submitHandler = (e) => {
+  e.preventDefault();
+  if(user) {
+    dispatch(ecom.product.saveRecipeReview(product._id, {
+      userId: user._id,
+      product: product._id,
+      comment: comment,
+      rating: rating,
+    })).then((data) => {
+      if (data) {
+        handleReviewsList();
+      }
+    });
+  } else {
+    dispatch(ecom.product.saveRecipeReview(product._id, {
+      userId: userInfo._id,
+      product: product._id,
+      comment: comment,
+      rating: rating,
+    })).then((data) => {
+      if (data) {
+        handleReviewsList();
+      }
+    });
+  }
+  setRating(1);
+  setComment('');
+  setOpenSnackBar(true);
+};
+
+const handleChangePageIndex = (event, value) => {
+  handleReviewsList(value);
+};
+
+const handleClose = (event, reason) => {
+  if (reason === 'clickaway') {
+    return;
+  }
+    setOpenSnackBar(false);
+};
+
+const showSuccess = () => (
+  <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBar} autoHideDuration={3000} onClose={handleClose}>
+    <Alert severity="success">Comment added</Alert>
+  </Snackbar>
+);
+const showError = () => (
+  <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBar} autoHideDuration={3000} onClose={handleClose}>
+    <Alert severity="error">{errorAddRev}</Alert>
+  </Snackbar>
+);
+
   return (
-    loading? <center className='loading1' ><CircularProgress color = 'inherit' /></center> : error ? <div>{error}</div> :
+    loading || loadingAddRev  ? <center className='loading1' ><CircularProgress color = 'inherit' /></center> : error ? <div>{error}</div> :
     <>
       <Head>
         <title>{product.name}</title>
@@ -190,6 +261,8 @@ const ProductDetails = ({ product }) => {
         <meta property="og:title" content="Jem Pillora" key="ogtitle" />
       </Head>
       <div className={styles.container}>
+        {recipeReviewSave && showSuccess()}
+        {errorAddRev && showError()}
         <div className={styles.containerLeft}>
           <CardMedia
             component="img"
@@ -221,27 +294,120 @@ const ProductDetails = ({ product }) => {
 
       {/*reviews section*/}
       <center style={{fontSize: "2rem", marginTop: "4rem"}}>Reviews</center>
+      {userInfo || user ? (
+       <>
+         <div className={styles.reviewContainer}>
+         <div>Rate this product</div>
+           <Rating
+             name="rating"
+             id='rating'
+             value={rating}
+             onChange={(event, newValue) => {
+               setRating(newValue);
+             }}
+           />
+           <form className onSubmit = {submitHandler}>
+             <div>
+              <Box
+                boxShadow={0}
+                bgcolor="background.paper"
+                m={0}
+                p={0}
+                style={{ width: '100%', height: '100&' }}
+              >
+                <FormControl className={(classes.margin, classes.textField)}>
+                  <TextField
+                    id="comment"
+                    label="Write your comment here"
+                    multiline
+                    name="comment"
+                    required
+                    onChange={(e) => setComment(e.target.value)}
+                    variant="outlined"
+                    rows={4}
+                  />
+                 <Button style={{ marginTop: '2%' }} variant="contained" type="submit">Comment</Button>
+               </FormControl>
+            </Box>
+          </div>
+        </form>
+      </div>
+    </>
+    ) : (
+     <div style={{fontSize: "1.5rem"}} className = 'reviews1'>
+       <Link href = "/signin">Please Sign-in to write a review.</Link>
+     </div>
+    )}
       <div>
+      { loadingReviews && <CircularProgress color='inherit'/> }
       { reviewList.length > 0 ? (
         <>
           {
            reviewList.map((review, idx) =>
             <>
-              <div key={idx}>
-                <div>{review.userId[0].full_name}</div>
-                <div>{review.comment}</div>
-              </div>
+              <Card className={styles.reviewContainerCard} key={idx}>
+                <div className={styles.reviewContainer}>
+                  {review.userId[0]._id === product.seller._id ? (
+                    <div>{review.userId[0].full_name} (Seller)</div>
+                  ) : (
+                    <div>{review.userId[0].full_name}</div>
+                  )}
+                  <div><Rating precision={.1} readOnly value={review.rating}/></div>
+                  <div>{review.comment}</div>
+                  <div>Posted: <b>{moment(review.createdAt).fromNow()}</b></div>
+                  { user ? (
+                    <>
+                      { review.userId[0]._id === user._id ? (
+                        <div className={styles.reviewButtonsCont}>
+                          <Button variant="outlined" size="small" color="secondary">Delete</Button>
+                          <Button variant="outlined" size="small" color="primary">Edit</Button>
+                        </div>
+                      ) : (
+                        null
+                      ) }
+                    </>
+                  ) : (
+                    null
+                  ) }
+                  {
+                    userInfo ? (
+                      <>
+                        { review.userId[0]._id === userInfo._id ? (
+                          <div className={styles.reviewButtonsCont}>
+                            <Button variant="outlined" size="small" color="secondary">Delete</Button>
+                            <Button variant="outlined" size="small" color="primary">Edit</Button>
+                          </div>
+                        ) : (
+                          null
+                        ) }
+                      </>
+                    ) : (
+                      null
+                    )
+                  }
+                </div>
+              </Card>
             </>
             )
            }
          </>
       ) : (
-        <center style = {{fontSize: '1rem'}} >No reviews found</center>
+      <div style={{fontSize: "1.5rem"}} className={styles.reviewContainer}>No reviews, right the first one</div>
       ) }
       </div>
+      <Pagination
+        style = {{ display: loading && 'none' }}
+        count={pageDetailsReview && pageDetailsReview.totalPages}
+        page={pageDetailsReview && pageDetailsReview.pageIndex}
+        defaultPage={1}
+        color="primary"
+        size="large"
+        onChange={handleChangePageIndex}
+        classes={{ ul: classes.paginator }}
+      />
 
       {/*other products*/}
-      <center style={{fontSize: "2rem", marginTop: "4rem"}}>Other products</center>
+      <center style={{fontSize: "2rem", marginTop: "4rem"}}>Related products</center>
       <div className={styles.containerProductList}>
         { productList.length > 0 ? (
           <>

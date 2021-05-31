@@ -96,3 +96,24 @@
 .description {
   font-size: .85rem;
 }
+
+.reviewContainerCard {
+  display: flex;
+  justify-content: flex-start;
+  margin: 1rem;
+  max-width: 30rem;
+  margin-top: 2rem;
+  flex-direction: column;
+}
+
+.reviewButtonsCont {
+  display: flex;
+  justify-content: space-between;
+  max-width: 9rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+}
+
+.reviewContainer {
+  margin: 1rem;
+}

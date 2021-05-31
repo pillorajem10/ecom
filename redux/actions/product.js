@@ -15,6 +15,20 @@ export const listProduct = ( sortBy = 'createdAt', order = 'desc', limit = 10  )
   }
 }
 
+export const relatedProducts = (pageIndex = 1, pageSize = 5 ,category='') => async (dispatch) => {
+  try{
+    dispatch({type: types.PRODUCT_LIST_PAGINATE_REQUEST});
+    const { data } = await axios.get(
+    '/api/product?pageIndex=' + pageIndex + '&pageSize=' + pageSize + '&category=' + category
+     );
+    dispatch({type: types.PRODUCT_LIST_PAGINATE_SUCCESS, payload: data});
+    return data
+  }
+  catch(error){
+    dispatch({type: types.PRODUCT_LIST_PAGINATE_FAIL, payload: error.message})
+  }
+}
+
 export const detailsProduct = (productById) => async (dispatch) => {
   try {
     dispatch({type: types.PRODUCT_DETAIL_REQUEST, payload: productById});
@@ -40,3 +54,32 @@ export const listReviews = (product='', pageIndex=1, pageSize=5) => async (dispa
     dispatch({type: types.REVIEW_LIST_FAIL, payload: error.message})
   }
 }
+
+export const saveRecipeReview = (productId, review) => async (dispatch, getState) => {
+  try {
+    const { userSignin: { user }, userRegister: { userInfo } } = getState();
+    dispatch({ type: types.REVIEW_ADD_REQUEST, payload: review });
+    if(user) {
+      const { data } = await axios.post(
+        `/api/product/reviews/add/${productId}`, review, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+      dispatch({ type: types.REVIEW_ADD_SUCCESS, payload: data });
+      return data;
+    } else {
+      const { data } = await axios.post(
+        `/api/product/reviews/add/${productId}`, review, {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        });
+      dispatch({ type: types.REVIEW_ADD_SUCCESS, payload: data });
+      return data;
+    }
+  } catch (error) {
+    // report error
+    dispatch({ type: types.REVIEW_ADD_FAIL, payload: error.response.data.error });
+  }
+};
