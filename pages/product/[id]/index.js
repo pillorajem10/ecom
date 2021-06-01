@@ -30,6 +30,9 @@ import TextField from '@material-ui/core/TextField';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Button from '@material-ui/core/Button';
 import EditIcon from '@material-ui/icons/Edit';
+import Modal from '@material-ui/core/Modal';
+import Backdrop from '@material-ui/core/Backdrop';
+import Fade from '@material-ui/core/Fade';
 import Pagination from "@material-ui/lab/Pagination";
 import { useMediaQuery } from '@material-ui/core';
 
@@ -77,6 +80,17 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: 'nowrap',
     cursor: 'pointer',
   },
+  modal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paper: {
+    backgroundColor: theme.palette.background.paper,
+    border: '2px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+  },
 }));
 
 const ProductDetails = ({ product }) => {
@@ -89,12 +103,15 @@ const ProductDetails = ({ product }) => {
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(1);
   const [openSnackBar, setOpenSnackBar] = useState(false);
+  const [openSnackBarDelRevWarning, setOpenSnackBarDelRevWarning] = useState(false);
+  const [selectedReview, setSelectedReview] = useState({});
 
   const lowReso = useMediaQuery('(max-width: 519px)');
 
   const { loading, error } = useSelector(state => state.productDetails);
   const { loadingReviews, errorReviews  } = useSelector(state => state.reviewList);
   const { loadingAddRev, errorAddRev, success: recipeReviewSave } = useSelector((state) => state.reviewAdd);
+  const { loadingDelRev, errorDelRev, successDelRev } = useSelector((state) => state.reviewDel);
   const { user } = useSelector(state => state.userSignin);
   const { userInfo } = useSelector(state => state.userRegister);
 
@@ -130,7 +147,6 @@ const ProductDetails = ({ product }) => {
               totalPages: data.totalPages,
               totalDocs: data.totalDocs
             });
-            console.log('[[PAGE DETAILS]]', pageDetailsReview)
           }
         })
     },
@@ -155,22 +171,26 @@ const ProductDetails = ({ product }) => {
     [dispatch, pageSize, product.category._id],
   );
 
+  const handleOpenModal = (review) => {
+    setOpenSnackBarDelRevWarning(true);
+    console.log('REBYU', review._id);
+    setSelectedReview(review);
+  };
+
+  const handleDeleteReview = () => {
+    dispatch(ecom.product.reviewDelete(product._id, selectedReview._id)).then((data) => {
+      if (data) {
+        handleReviewsList();
+      }
+    });
+    setOpenSnackBarDelRevWarning(false);
+  }
 
   useEffect(() => {
     dispatch(ecom.product.detailsProduct(product._id));
-    return () => {
-      //
-    };
-  }, []);
-
-  useEffect(() => {
     handleProductList();
-  }, [handleProductList]);
-
-  useEffect(() => {
-    console.log('REBYUUUUUUU EPEK LOL')
     handleReviewsList();
-  }, [handleReviewsList]);
+  }, [handleProductList, handleReviewsList]);
 
   const submitHandler = (e) => {
   e.preventDefault();
@@ -210,12 +230,29 @@ const handleClose = (event, reason) => {
   if (reason === 'clickaway') {
     return;
   }
-    setOpenSnackBar(false);
+  setOpenSnackBar(false);
+  setOpenSnackBarDelRevWarning(false);
 };
+
+const handleCloseModal = () => {
+  setOpenSnackBarDelRevWarning(false);
+};
+
+/*
+const handleCofirmDelRev = (event) => {
+  if(confirmDelRev === true) {
+    setConfirmDelRev(false);
+    setOpenSnackBarDelRevWarning(false);
+  } else {
+    setConfirmDelRev(true);
+    setOpenSnackBarDelRevWarning(false);
+  }
+}
+*/
 
 const showSuccess = () => (
   <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBar} autoHideDuration={3000} onClose={handleClose}>
-    <Alert severity="success">Comment added</Alert>
+    <Alert severity="success">Review successfully added</Alert>
   </Snackbar>
 );
 const showError = () => (
@@ -223,6 +260,20 @@ const showError = () => (
     <Alert severity="error">{errorAddRev}</Alert>
   </Snackbar>
 );
+
+/*
+const confirmDeleteReview = () => (
+  <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBarDelRevWarning} onClose={handleClose}>
+    <Alert severity="warning">
+    <center>Are you sure you want to delete this review?</center>
+    <div className={styles.alertButtonCont}>
+      <Button onClick={handleCofirmDelRev} size="small" variant="contained">Yes</Button>
+      <Button onClick={handleClose} size="small" variant="contained" >No</Button>
+    </div>
+    </Alert>
+  </Snackbar>
+);
+*/
 
   return (
     loading || loadingAddRev  ? <center className='loading1' ><CircularProgress color = 'inherit' /></center> : error ? <div>{error}</div> :
@@ -283,7 +334,7 @@ const showError = () => (
             <div className={styles.actionContainer}>
               <div className={styles.quantityContainer}>
                 <button className={styles.quantityBtn} onClick={decQuantity}>-</button>
-                <input className={styles.quantityInput} value={quantity}/>
+                <input className={styles.quantityInput} value={quantity} readOnly/>
                 <button className={styles.quantityBtn} onClick={incQuantity}>+</button>
               </div>
               <button className={styles.addToCartBtn}>Add to cart</button>
@@ -343,51 +394,54 @@ const showError = () => (
       { reviewList.length > 0 ? (
         <>
           {
-           reviewList.map((review, idx) =>
-            <>
-              <Card className={styles.reviewContainerCard} key={idx}>
-                <div className={styles.reviewContainer}>
-                  {review.userId[0]._id === product.seller._id ? (
-                    <div>{review.userId[0].full_name} (Seller)</div>
-                  ) : (
-                    <div>{review.userId[0].full_name}</div>
-                  )}
-                  <div><Rating precision={.1} readOnly value={review.rating}/></div>
-                  <div>{review.comment}</div>
-                  <div>Posted: <b>{moment(review.createdAt).fromNow()}</b></div>
-                  { user ? (
-                    <>
-                      { review.userId[0]._id === user._id ? (
-                        <div className={styles.reviewButtonsCont}>
-                          <Button variant="outlined" size="small" color="secondary">Delete</Button>
-                          <Button variant="outlined" size="small" color="primary">Edit</Button>
-                        </div>
-                      ) : (
-                        null
-                      ) }
-                    </>
-                  ) : (
-                    null
-                  ) }
-                  {
-                    userInfo ? (
-                      <>
-                        { review.userId[0]._id === userInfo._id ? (
-                          <div className={styles.reviewButtonsCont}>
-                            <Button variant="outlined" size="small" color="secondary">Delete</Button>
-                            <Button variant="outlined" size="small" color="primary">Edit</Button>
-                          </div>
-                        ) : (
-                          null
-                        ) }
-                      </>
-                    ) : (
-                      null
-                    )
-                  }
-                </div>
-              </Card>
-            </>
+           reviewList.map((review, idx) => {
+             return (
+               <>
+                 <Card className={styles.reviewContainerCard} key={idx}>
+                   <div className={styles.reviewContainer}>
+                     {review.userId[0]._id === product.seller._id ? (
+                       <div>{review.userId[0].full_name} (Seller)</div>
+                     ) : (
+                       <div>{review.userId[0].full_name}</div>
+                     )}
+                     <div style={{marginTop: ".5rem"}}><Rating size="small" precision={.1} readOnly value={review.rating}/></div>
+                     <div style={{marginTop: ".5rem"}}>{review.comment}</div>
+                     <div style={{marginTop: ".5rem"}}>Posted: <b>{moment(review.createdAt).fromNow()}</b></div>
+                     { user ? (
+                       <>
+                         { review.userId[0]._id === user._id ? (
+                           <div className={styles.reviewButtonsCont}>
+                             <Button onClick={() => handleOpenModal(review)} variant="outlined" size="small" color="secondary">Delete</Button>
+                             <Button variant="outlined" size="small" color="primary">Edit</Button>
+                           </div>
+                         ) : (
+                           null
+                         ) }
+                       </>
+                     ) : (
+                       null
+                     ) }
+                     {
+                       userInfo ? (
+                         <>
+                           { review.userId[0]._id === userInfo._id ? (
+                             <div className={styles.reviewButtonsCont}>
+                               <Button onClick={() => handleDeleteReview(review)} variant="outlined" size="small" color="secondary">Delete</Button>
+                               <Button variant="outlined" size="small" color="primary">Edit</Button>
+                             </div>
+                           ) : (
+                             null
+                           ) }
+                         </>
+                       ) : (
+                         null
+                       )
+                     }
+                   </div>
+                 </Card>
+               </>
+             )
+           }
             )
            }
          </>
@@ -395,6 +449,28 @@ const showError = () => (
       <div style={{fontSize: "1.5rem"}} className={styles.reviewContainer}>No reviews, right the first one</div>
       ) }
       </div>
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        className={classes.modal}
+        open={openSnackBarDelRevWarning}
+        onClose={handleCloseModal}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={openSnackBarDelRevWarning}>
+          <div className={classes.paper}>
+            <p id="transition-modal-description">Are you sure you want to delete this review?</p>
+            <div className={styles.alertButtonCont}>
+              <Button onClick={() => handleDeleteReview()} size="small" variant="contained">Yes</Button>
+              <Button onClick={handleCloseModal} size="small" variant="contained" >No</Button>
+            </div>
+          </div>
+        </Fade>
+      </Modal>
       <Pagination
         style = {{ display: loading && 'none' }}
         count={pageDetailsReview && pageDetailsReview.totalPages}

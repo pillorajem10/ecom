@@ -83,3 +83,32 @@ export const saveRecipeReview = (productId, review) => async (dispatch, getState
     dispatch({ type: types.REVIEW_ADD_FAIL, payload: error.response.data.error });
   }
 };
+
+export const reviewDelete = (productId, reviewId) => async (dispatch, getState) => {
+  try {
+    const { userSignin: { user }, userRegister: { userInfo } } = getState();
+    dispatch({ type: types.REVIEW_DEL_REQUEST, payload: reviewId });
+    if(user) {
+      const { data } = await axios.delete(
+        `/api/product/reviews/delete/${productId}/${reviewId}`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+      dispatch({ type: types.REVIEW_DEL_SUCCESS, payload: data });
+      return data;
+    } else {
+      const { data } = await axios.delete(
+        `/api/product/reviews/delete/${productId}/${reviewId}`, {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        });
+      dispatch({ type: types.REVIEW_DEL_SUCCESS, payload: data });
+      return data;
+    }
+  } catch (error) {
+    // report error
+    dispatch({ type: types.REVIEW_DEL_FAIL, payload: error.response.data.error });
+  }
+}

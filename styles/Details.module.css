@@ -117,3 +117,11 @@
 .reviewContainer {
   margin: 1rem;
 }
+
+.alertButtonCont {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  margin-top: 1rem
+}

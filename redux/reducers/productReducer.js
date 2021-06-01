@@ -54,6 +54,19 @@ export const productAddReviewsReducer = (state = { review: {} }, action) => {
   }
 }
 
+export const productDelReviewsReducer = (state = {reviewDel: {} }, action) => {
+  switch(action.type){
+    case type.REVIEW_DEL_REQUEST:
+      return {loadingDelRev: true};
+    case type.REVIEW_DEL_SUCCESS:
+      return {loadingDelRev: false, successDelRev: true, reviewDel: action.payload};
+    case type.REVIEW_DEL_FAIL:
+      return {loadingDelRev: false, successDelRev: false, errorDelRev: action.payload};
+    default:
+      return state;
+  }
+}
+
 export const productDetailsReducer = (state = {product: {} }, action) => {
   switch(action.type){
     case type.PRODUCT_DETAIL_REQUEST:
