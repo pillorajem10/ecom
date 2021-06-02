@@ -65,6 +65,17 @@ const useStyles = makeStyles((theme) => ({
         },
     },
   },
+  textField1: {
+    width: '100%',
+    '& label.Mui-focused': {
+      color: '#FF3F16',
+    },
+    '& .MuiOutlinedInput-root': {
+        '&.Mui-focused fieldset': {
+            borderColor: '#FF3F16',
+        },
+    },
+  },
   root: {
     maxHeight: "17rem",
     maxWidth: "8rem",
@@ -90,6 +101,13 @@ const useStyles = makeStyles((theme) => ({
     border: '2px solid #000',
     boxShadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 3),
+    width: '30rem'
+  },
+  paper1: {
+    backgroundColor: theme.palette.background.paper,
+    border: '2px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
   },
 }));
 
@@ -102,9 +120,13 @@ const ProductDetails = ({ product }) => {
   const [pageSize] = useState(5);
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(1);
+  const [updatedComment, setUpdatedComment] = useState('');
+  const [updatedRating, setUpdatedRating] = useState(1);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [openSnackBarForDeleteRev, setOpenSnackBarForDeleteRev] = useState(false);
+  const [openSnackBarForUpdtRev, setOpenSnackBarForUpdtRev] = useState(false);
   const [openSnackBarDelRevWarning, setOpenSnackBarDelRevWarning] = useState(false);
+  const [openModalForReviewUpdt, setOpenModalForReviewUpdt] = useState(false);
   const [selectedReview, setSelectedReview] = useState({});
 
   const lowReso = useMediaQuery('(max-width: 519px)');
@@ -113,6 +135,7 @@ const ProductDetails = ({ product }) => {
   const { loadingReviews, errorReviews  } = useSelector(state => state.reviewList);
   const { loadingAddRev, errorAddRev, success: recipeReviewSave } = useSelector((state) => state.reviewAdd);
   const { loadingDelRev, errorDelRev, successDelRev } = useSelector((state) => state.reviewDel);
+  const { loadingUpdtRev, errorUpdtRev, successUpdtRev } = useSelector((state) => state.reviewUpdate);
   const { user } = useSelector(state => state.userSignin);
   const { userInfo } = useSelector(state => state.userRegister);
 
@@ -173,7 +196,15 @@ const ProductDetails = ({ product }) => {
   );
 
   const handleOpenModal = (review) => {
-    setOpenSnackBarDelRevWarning(true);;
+    setOpenSnackBarDelRevWarning(true);
+    setSelectedReview(review);
+  };
+
+  const handleOpenModalForUpdtModal = (review) => {
+    setOpenModalForReviewUpdt(true);
+    setUpdatedComment(review.comment);
+    setUpdatedRating(review.rating);
+    console.log('REVIEW ID', review._id);
     setSelectedReview(review);
   };
 
@@ -225,6 +256,36 @@ const ProductDetails = ({ product }) => {
   setOpenSnackBar(true);
 };
 
+const submitHandlerForUpdate = (e) => {
+e.preventDefault();
+setOpenSnackBarForUpdtRev(true);
+if(user) {
+  dispatch(ecom.product.updateReview(product._id, selectedReview._id, {
+    comment: updatedComment,
+    rating: updatedRating,
+  })).then((data) => {
+    if (data) {
+      handleReviewsList();
+      setUpdatedRating(1);
+      setUpdatedComment('');
+      setOpenModalForReviewUpdt(false);
+    }
+  });
+} else {
+  dispatch(ecom.product.updateReview(product._id, selectedReview._id, {
+    comment: updatedComment,
+    rating: updatedRating,
+  })).then((data) => {
+    if (data) {
+      handleReviewsList();
+      setUpdatedRating(1);
+      setUpdatedComment('');
+      setOpenModalForReviewUpdt(false);
+    }
+  });
+ }
+};
+
 const handleChangePageIndex = (event, value) => {
   handleReviewsList(value);
 };
@@ -235,10 +296,12 @@ const handleClose = (event, reason) => {
   }
   setOpenSnackBar(false);
   setOpenSnackBarForDeleteRev(false);
+  setOpenSnackBarForUpdtRev(false);
 };
 
 const handleCloseModal = () => {
   setOpenSnackBarDelRevWarning(false);
+  setOpenModalForReviewUpdt(false);
 };
 
 /*
@@ -268,6 +331,18 @@ const showSuccessForDeleteRev = () => (
 const showError = () => (
   <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBar} autoHideDuration={3000} onClose={handleClose}>
     <Alert severity="error">{errorAddRev}</Alert>
+  </Snackbar>
+);
+
+const showSuccessForUpdtRev = () => (
+  <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBarForUpdtRev} autoHideDuration={3000} onClose={handleClose}>
+    <Alert severity="success">Review successfully updated</Alert>
+  </Snackbar>
+);
+
+const showErrorForUpdtRev = () => (
+  <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBarForUpdtRev} autoHideDuration={3000} onClose={handleClose}>
+    <Alert severity="error">{errorUpdtRev}</Alert>
   </Snackbar>
 );
 
@@ -325,6 +400,8 @@ const confirmDeleteReview = () => (
         {recipeReviewSave && showSuccess()}
         {errorAddRev && showError()}
         {successDelRev && showSuccessForDeleteRev()}
+        {successUpdtRev && showSuccessForUpdtRev()}
+        {errorUpdtRev && showErrorForUpdtRev()}
         <div className={styles.containerLeft}>
           <CardMedia
             component="img"
@@ -405,13 +482,14 @@ const confirmDeleteReview = () => (
       { loadingReviews && <CircularProgress color='inherit'/> }
       { loadingAddRev && <CircularProgress color='inherit'/> }
       { loadingDelRev && <CircularProgress color='inherit'/> }
+      { loadingUpdtRev && <CircularProgress color='inherit'/> }
       { reviewList.length > 0 ? (
         <>
           {
            reviewList.map((review, idx) => {
              return (
                <>
-                 <Card className={styles.reviewContainerCard} key={idx}>
+                 <Card style = {{ display: loadingReviews || loadingAddRev || loadingDelRev || loadingUpdtRev ? ('none') : (null) }} className={styles.reviewContainerCard} key={idx}>
                    <div className={styles.reviewContainer}>
                      {review.userId[0]._id === product.seller._id ? (
                        <div>{review.userId[0].full_name} (Seller)</div>
@@ -426,7 +504,7 @@ const confirmDeleteReview = () => (
                          { review.userId[0]._id === user._id ? (
                            <div className={styles.reviewButtonsCont}>
                              <Button onClick={() => handleOpenModal(review)} variant="outlined" size="small" color="secondary">Delete</Button>
-                             <Button variant="outlined" size="small" color="primary">Edit</Button>
+                             <Button onClick={() => handleOpenModalForUpdtModal(review)} variant="outlined" size="small" color="primary">Edit</Button>
                            </div>
                          ) : (
                            null
@@ -440,8 +518,8 @@ const confirmDeleteReview = () => (
                          <>
                            { review.userId[0]._id === userInfo._id ? (
                              <div className={styles.reviewButtonsCont}>
-                               <Button onClick={() => handleDeleteReview(review)} variant="outlined" size="small" color="secondary">Delete</Button>
-                               <Button variant="outlined" size="small" color="primary">Edit</Button>
+                               <Button onClick={() => handleOpenModal(review)} variant="outlined" size="small" color="secondary">Delete</Button>
+                               <Button onClick={() => handleOpenModalForUpdtModal(review)} variant="outlined" size="small" color="primary">Edit</Button>
                              </div>
                            ) : (
                              null
@@ -476,12 +554,64 @@ const confirmDeleteReview = () => (
         }}
       >
         <Fade in={openSnackBarDelRevWarning}>
-          <div className={classes.paper}>
+          <div className={classes.paper1}>
             <p id="transition-modal-description">Are you sure you want to delete this review?</p>
             <div className={styles.alertButtonCont}>
               <Button onClick={() => handleDeleteReview()} size="small" variant="contained">Yes</Button>
               <Button onClick={handleCloseModal} size="small" variant="contained" >No</Button>
             </div>
+          </div>
+        </Fade>
+      </Modal>
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        className={classes.modal}
+        open={openModalForReviewUpdt}
+        onClose={handleCloseModal}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={openModalForReviewUpdt}>
+          <div className={classes.paper}>
+            <Rating
+              name="updatedRating"
+              id='updatedRating'
+              value={updatedRating}
+              onChange={(event, newValue) => {
+                setUpdatedRating(newValue);
+              }}
+            />
+            <form style={{marginTop: "1rem"}} className onSubmit = {submitHandlerForUpdate}>
+              <div>
+               <Box
+                 boxShadow={0}
+                 bgcolor="background.paper"
+                 m={0}
+                 p={0}
+                 style={{ width: '100%', height: '100&' }}
+               >
+                 <FormControl className={(classes.margin, classes.textField1)}>
+                   <TextField
+                     id="updatedComment"
+                     label="Write your comment here"
+                     multiline
+                     name="updatedComment"
+                     required
+                     value={updatedComment}
+                     onChange={(e) => setUpdatedComment(e.target.value)}
+                     variant="outlined"
+                     rows={4}
+                   />
+                  <Button style={{ marginTop: '2%' }} variant="contained" type="submit">Comment</Button>
+                  <Button color="secondary" style={{ marginTop: '2%' }} variant="contained" onClick={() =>setOpenModalForReviewUpdt(false)}>Cancel</Button>
+                </FormControl>
+             </Box>
+             </div>
+           </form>
           </div>
         </Fade>
       </Modal>

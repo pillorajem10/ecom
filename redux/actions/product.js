@@ -84,6 +84,35 @@ export const saveRecipeReview = (productId, review) => async (dispatch, getState
   }
 };
 
+export const updateReview = (productId, reviewId, review) => async (dispatch, getState) => {
+  try {
+    const { userSignin: { user }, userRegister: { userInfo } } = getState();
+    dispatch({ type: types.REVIEW_UPDT_REQUEST, payload: review });
+    if(user) {
+      const { data } = await axios.put(
+        `/api/product/reviews/update/${productId}/${reviewId}`, review, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+      dispatch({ type: types.REVIEW_UPDT_SUCCESS, payload: data });
+      return data;
+    } else {
+      const { data } = await axios.put(
+        `/api/product/reviews/update/${productId}/${reviewId}`, review, {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        });
+      dispatch({ type: types.REVIEW_UPDT_SUCCESS, payload: data });
+      return data;
+    }
+  } catch (error) {
+    // report error
+    dispatch({ type: types.REVIEW_UPDT_FAIL, payload: error.response.data.error });
+  }
+};
+
 export const reviewDelete = (productId, reviewId) => async (dispatch, getState) => {
   try {
     const { userSignin: { user }, userRegister: { userInfo } } = getState();

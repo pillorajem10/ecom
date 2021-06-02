@@ -67,6 +67,19 @@ export const productDelReviewsReducer = (state = {reviewDel: {} }, action) => {
   }
 }
 
+export const productUpdtReviewsReducer = (state = {reviewUpdt: {} }, action) => {
+  switch(action.type){
+    case type.REVIEW_UPDT_REQUEST:
+      return {loadingUpdtRev: true};
+    case type.REVIEW_UPDT_SUCCESS:
+      return {loadingUpdtRev: false, successUpdtRev: true, reviewUpdt: action.payload};
+    case type.REVIEW_UPDT_FAIL:
+      return {loadingUpdtRev: false, successUpdtRev: false, errorUpdtRev: action.payload};
+    default:
+      return state;
+  }
+}
+
 export const productDetailsReducer = (state = {product: {} }, action) => {
   switch(action.type){
     case type.PRODUCT_DETAIL_REQUEST:
