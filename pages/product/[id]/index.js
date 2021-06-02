@@ -103,6 +103,7 @@ const ProductDetails = ({ product }) => {
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(1);
   const [openSnackBar, setOpenSnackBar] = useState(false);
+  const [openSnackBarForDeleteRev, setOpenSnackBarForDeleteRev] = useState(false);
   const [openSnackBarDelRevWarning, setOpenSnackBarDelRevWarning] = useState(false);
   const [selectedReview, setSelectedReview] = useState({});
 
@@ -172,8 +173,7 @@ const ProductDetails = ({ product }) => {
   );
 
   const handleOpenModal = (review) => {
-    setOpenSnackBarDelRevWarning(true);
-    console.log('REBYU', review._id);
+    setOpenSnackBarDelRevWarning(true);;
     setSelectedReview(review);
   };
 
@@ -184,6 +184,7 @@ const ProductDetails = ({ product }) => {
       }
     });
     setOpenSnackBarDelRevWarning(false);
+    setOpenSnackBarForDeleteRev(true);
   }
 
   useEffect(() => {
@@ -203,6 +204,7 @@ const ProductDetails = ({ product }) => {
     })).then((data) => {
       if (data) {
         handleReviewsList();
+        setComment('');
       }
     });
   } else {
@@ -214,11 +216,12 @@ const ProductDetails = ({ product }) => {
     })).then((data) => {
       if (data) {
         handleReviewsList();
+        setComment('');
       }
     });
   }
   setRating(1);
-  setComment('');
+  console.log('COMMENT', comment)
   setOpenSnackBar(true);
 };
 
@@ -231,7 +234,7 @@ const handleClose = (event, reason) => {
     return;
   }
   setOpenSnackBar(false);
-  setOpenSnackBarDelRevWarning(false);
+  setOpenSnackBarForDeleteRev(false);
 };
 
 const handleCloseModal = () => {
@@ -255,6 +258,13 @@ const showSuccess = () => (
     <Alert severity="success">Review successfully added</Alert>
   </Snackbar>
 );
+
+const showSuccessForDeleteRev = () => (
+  <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBarForDeleteRev} autoHideDuration={3000} onClose={handleClose}>
+    <Alert severity="success">Review deleted successfully</Alert>
+  </Snackbar>
+);
+
 const showError = () => (
   <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBar} autoHideDuration={3000} onClose={handleClose}>
     <Alert severity="error">{errorAddRev}</Alert>
@@ -276,7 +286,7 @@ const confirmDeleteReview = () => (
 */
 
   return (
-    loading || loadingAddRev  ? <center className='loading1' ><CircularProgress color = 'inherit' /></center> : error ? <div>{error}</div> :
+    loading ? <center className='loading1' ><CircularProgress color = 'inherit' /></center> : error ? <div>{error}</div> :
     <>
       <Head>
         <title>{product.name}</title>
@@ -314,6 +324,7 @@ const confirmDeleteReview = () => (
       <div className={styles.container}>
         {recipeReviewSave && showSuccess()}
         {errorAddRev && showError()}
+        {successDelRev && showSuccessForDeleteRev()}
         <div className={styles.containerLeft}>
           <CardMedia
             component="img"
@@ -373,6 +384,7 @@ const confirmDeleteReview = () => (
                     multiline
                     name="comment"
                     required
+                    value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     variant="outlined"
                     rows={4}
@@ -391,6 +403,8 @@ const confirmDeleteReview = () => (
     )}
       <div>
       { loadingReviews && <CircularProgress color='inherit'/> }
+      { loadingAddRev && <CircularProgress color='inherit'/> }
+      { loadingDelRev && <CircularProgress color='inherit'/> }
       { reviewList.length > 0 ? (
         <>
           {
