@@ -3,6 +3,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import thunk from 'redux-thunk'
 import { productListReducer, productDetailsReducer, reviewsListReducer, productUpdtReviewsReducer, relatedProductList, productAddReviewsReducer, productDelReviewsReducer } from './reducers/productReducer';
 import { userRegisterReducer, userLoginReducer } from './reducers/userReducer';
+import { shiptoListReducer, subcitiesListReducer } from './reducers/shiptoReducer';
 import Cookie from 'js-cookie';
 
 const user = Cookie.getJSON('user');
@@ -22,7 +23,9 @@ const reducer = combineReducers({
   reviewList: reviewsListReducer,
   reviewAdd: productAddReviewsReducer,
   reviewDel: productDelReviewsReducer,
-  reviewUpdate: productUpdtReviewsReducer
+  reviewUpdate: productUpdtReviewsReducer,
+  shipList: shiptoListReducer,
+  subcityList: subcitiesListReducer
 });
 
 //const composeEnhancer = compose;

@@ -25,6 +25,7 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import { makeStyles } from '@material-ui/core/styles';
+import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -57,22 +58,34 @@ const useStyles = makeStyles((theme) => ({
   textField: {
     width: '50%',
     '& label.Mui-focused': {
-      color: '#FF3F16',
+      color: '#2e2e2e',
     },
     '& .MuiOutlinedInput-root': {
         '&.Mui-focused fieldset': {
-            borderColor: '#FF3F16',
+            borderColor: '#2e2e2e',
+        },
+    },
+  },
+  shipping: {
+    width: '45%',
+    fontSize: '.5rem',
+    '& label.Mui-focused': {
+      color: '#2e2e2e',
+    },
+    '& .MuiOutlinedInput-root': {
+        '&.Mui-focused fieldset': {
+            borderColor: '#2e2e2e',
         },
     },
   },
   textField1: {
     width: '100%',
     '& label.Mui-focused': {
-      color: '#FF3F16',
+      color: '#2e2e2e',
     },
     '& .MuiOutlinedInput-root': {
         '&.Mui-focused fieldset': {
-            borderColor: '#FF3F16',
+            borderColor: '#2e2e2e',
         },
     },
   },
@@ -112,22 +125,36 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const ProductDetails = ({ product }) => {
+  //quantity
   const [quantity, setQuantity] = useState(1);
+
+  //lists
   const [productList, setProductList] = useState([]);
   const [reviewList, setReviewList] = useState([]);
+  const [shiptoList, setShipToList] = useState([]);
+  const [subcityList, setSubcityList] = useState([]);
+
+  //pagination
   const [pageDetails, setPageDetails] = useState(null);
   const [pageDetailsReview, setPageDetailsReview] = useState(null);
   const [pageSize] = useState(5);
+
+  //reviews
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(1);
   const [updatedComment, setUpdatedComment] = useState('');
   const [updatedRating, setUpdatedRating] = useState(1);
+    const [selectedReview, setSelectedReview] = useState({});
+
+  //alerts
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [openSnackBarForDeleteRev, setOpenSnackBarForDeleteRev] = useState(false);
   const [openSnackBarForUpdtRev, setOpenSnackBarForUpdtRev] = useState(false);
   const [openSnackBarDelRevWarning, setOpenSnackBarDelRevWarning] = useState(false);
   const [openModalForReviewUpdt, setOpenModalForReviewUpdt] = useState(false);
-  const [selectedReview, setSelectedReview] = useState({});
+
+  //Shipping
+  const [selectedShipTo, setSelectedShipTo] = useState('');
 
   const lowReso = useMediaQuery('(max-width: 519px)');
 
@@ -136,6 +163,8 @@ const ProductDetails = ({ product }) => {
   const { loadingAddRev, errorAddRev, success: recipeReviewSave } = useSelector((state) => state.reviewAdd);
   const { loadingDelRev, errorDelRev, successDelRev } = useSelector((state) => state.reviewDel);
   const { loadingUpdtRev, errorUpdtRev, successUpdtRev } = useSelector((state) => state.reviewUpdate);
+  const { loadingShipto, errorShipto } = useSelector(state => state.shipList);
+  const { loadingSubcities, errorSubcities } = useSelector(state => state.subcityList);
   const { user } = useSelector(state => state.userSignin);
   const { userInfo } = useSelector(state => state.userRegister);
 
@@ -159,6 +188,12 @@ const ProductDetails = ({ product }) => {
     }
   }
 
+  const selectShipToHandler = (e) => {
+    setSelectedShipTo(e.target.value);
+    console.log('SHIP TO NAME', e.target.value);
+    dispatch(ecom.shipto.getShippingPlace(selectedShipTo));
+  }
+
   const handleReviewsList = useCallback(
     (pageIndex = 1) => {
       dispatch(ecom.product.listReviews(product._id, pageIndex, pageSize))
@@ -177,6 +212,18 @@ const ProductDetails = ({ product }) => {
     [dispatch, pageSize, product._id],
   );
 
+  const handleSubcityList = useCallback(
+    (pageIndex = 1) => {
+      dispatch(ecom.shipto.listSubCities(selectedShipTo))
+        .then((data) => {
+          if (data) {
+            setSubcityList(data.docs);
+          }
+        })
+    },
+    [dispatch, selectedShipTo],
+  );
+
   const handleProductList = useCallback(
     (pageIndex = 1) => {
       dispatch(ecom.product.relatedProducts(pageIndex, pageSize, product.category._id))
@@ -193,6 +240,18 @@ const ProductDetails = ({ product }) => {
         })
     },
     [dispatch, pageSize, product.category._id],
+  );
+
+  const handleShipToList = useCallback(
+    () => {
+      dispatch(ecom.shipto.listShipTo())
+        .then((data) => {
+          if (data) {
+            setShipToList(data);
+          }
+        })
+    },
+    [dispatch],
   );
 
   const handleOpenModal = (review) => {
@@ -221,8 +280,11 @@ const ProductDetails = ({ product }) => {
   useEffect(() => {
     dispatch(ecom.product.detailsProduct(product._id));
     handleProductList();
+    handleSubcityList();
     handleReviewsList();
-  }, [handleProductList, handleReviewsList]);
+    handleShipToList();
+    console.log('SLECTED SHIP TO', selectedShipTo)
+  }, [handleProductList, handleReviewsList, handleShipToList, handleSubcityList]);
 
   const submitHandler = (e) => {
   e.preventDefault();
@@ -304,18 +366,6 @@ const handleCloseModal = () => {
   setOpenModalForReviewUpdt(false);
 };
 
-/*
-const handleCofirmDelRev = (event) => {
-  if(confirmDelRev === true) {
-    setConfirmDelRev(false);
-    setOpenSnackBarDelRevWarning(false);
-  } else {
-    setConfirmDelRev(true);
-    setOpenSnackBarDelRevWarning(false);
-  }
-}
-*/
-
 const showSuccess = () => (
   <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBar} autoHideDuration={3000} onClose={handleClose}>
     <Alert severity="success">Review successfully added</Alert>
@@ -346,19 +396,6 @@ const showErrorForUpdtRev = () => (
   </Snackbar>
 );
 
-/*
-const confirmDeleteReview = () => (
-  <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={openSnackBarDelRevWarning} onClose={handleClose}>
-    <Alert severity="warning">
-    <center>Are you sure you want to delete this review?</center>
-    <div className={styles.alertButtonCont}>
-      <Button onClick={handleCofirmDelRev} size="small" variant="contained">Yes</Button>
-      <Button onClick={handleClose} size="small" variant="contained" >No</Button>
-    </div>
-    </Alert>
-  </Snackbar>
-);
-*/
 
   return (
     loading ? <center className='loading1' ><CircularProgress color = 'inherit' /></center> : error ? <div>{error}</div> :
@@ -366,31 +403,6 @@ const confirmDeleteReview = () => (
       <Head>
         <title>{product.name}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/*
-          <meta name="description" content="Full-stack developer" />
-          <meta name="keywords" content="full-stack developer, MERN stack developer, freelance developer" />
-          <meta
-            property="og:title"
-            content="JemPillora"
-            key="title"
-          />
-          <meta
-            property="og:description"
-            content="Full-stack developer that can create your website for your business"
-            key="description"
-          />
-          <meta
-            property="og:image"
-            content="%PUBLIC_URL%/favicon.jpeg"
-            key="image"
-          />
-          <meta
-            property="og:site_name"
-            content="JemPillora"
-          />
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://jempillora.vercel.app/" key="og:url"/>
-        */}
         <meta property="og:image" content={`/api/product/photo/${product._id}`} key="ogimage" />
         <meta property="og:url" content="https://jempillora.vercel.app/" key="ogurl" />
         <meta property="og:site_name" content="Jem Pillora" key="ogsitename" />
@@ -406,29 +418,106 @@ const confirmDeleteReview = () => (
           <CardMedia
             component="img"
             alt={product.name}
-            height="500"
+            height="550"
             image={`/api/product/photo/${product._id}`}
             title={product.name}
           />
-        </div>
-        <Card>
-          <div className={styles.containerRight}>
-            <div className={styles.prodName}>{product.name}</div>
-            <p className={styles.price}>₱{product.price}</p>
-            <p className={styles.description}>{product.description}</p>
-            <p><b>Seller: </b>{product.seller.full_name}</p>
-            <p><b>Category: </b>{product.category.name}</p>
-            <p><b>Brand: </b>{product.brand.name}</p>
-            <div className={styles.actionContainer}>
-              <div className={styles.quantityContainer}>
-                <button className={styles.quantityBtn} onClick={decQuantity}>-</button>
-                <input className={styles.quantityInput} value={quantity} readOnly/>
-                <button className={styles.quantityBtn} onClick={incQuantity}>+</button>
-              </div>
-              <button className={styles.addToCartBtn}>Add to cart</button>
-            </div>
+          <div style={{marginTop: "2rem"}}>
+            <div style={{fontSize: "1.5rem"}}>Product Specifacations:</div>
+            <p><b>Category:</b> {product.category.name}</p>
+            <p><b>Brand:</b> {product.brand.name}</p>
+            <p><b>Stock:</b> {product.quantity}</p>
+            <p><b>Shipped From:</b> {product.shippedFrom}</p>
+            <div style={{fontSize: "1.5rem"}}>Product Description:</div>
+            <p>{product.description}</p>
           </div>
-        </Card>
+        </div>
+        <div className={styles.containerRight}>
+          <div className={styles.prodName}>{product.name}</div>
+          <div className={styles.ratingsContainer}>
+            <div style={{fontSize: "1.2rem"}}>{product.rating.toFixed(1)}</div>
+            <Rating precision={.2} readOnly value={product.rating.toFixed(1)}/> <div style = {{fontSize: "1.5rem"}}/>
+            <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Ratings:</b> {product.numReviews}</div>
+            <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Sold:</b> {product.sold}</div>
+          </div>
+          <p className={styles.price}>₱{product.price}</p>
+          <p><b>Seller: </b>{product.seller.full_name}</p>
+          <p><b>Shipping:</b></p>
+          <div className={styles.actionContainer}>
+            <FormControl className={(classes.margin, classes.shipping)}>
+              <Select
+                native
+                required
+                onChange={selectShipToHandler}
+                variant="outlined"
+                value={selectedShipTo}
+                inputProps={{
+                  name: 'shipTo',
+                  id: 'shipTo',
+                }}
+              >
+                <option value="">Ship To</option>
+                {
+                 shiptoList.map((shipTo, index) => (
+                   <option key={index} value={shipTo._id}>
+                      {shipTo.name}
+                   </option>
+                ))}
+              </Select>
+            </FormControl>
+            { selectedShipTo === "" ? (
+              <FormControl className={(classes.margin, classes.shipping)} disabled>
+                <Select
+                  native
+                  required
+                  style={{marginLeft: "1rem"}}
+                  variant="outlined"
+                  inputProps={{
+                    name: 'subCity',
+                    id: 'subCity',
+                  }}
+                >
+                  <option value = "">Select City</option>
+                  {
+                   subcityList.map((subcity, index) => (
+                     <option key={index} value={subcity._id}>
+                        {subcity.name}
+                     </option>
+                  ))}
+                </Select>
+              </FormControl>
+            ) : (
+              <FormControl className={(classes.margin, classes.shipping)}>
+                <Select
+                  native
+                  required
+                  style={{marginLeft: "1rem"}}
+                  variant="outlined"
+                  inputProps={{
+                    name: 'subCity',
+                    id: 'subCity',
+                  }}
+                >
+                  <option value = "">Select City</option>
+                  {
+                   subcityList.map((subcity, index) => (
+                     <option key={index} value={subcity._id}>
+                        {subcity.name}
+                     </option>
+                  ))}
+                </Select>
+              </FormControl>
+            ) }
+          </div>
+          <p className={styles.actionContainer}>
+            <div className={styles.quantityContainer}>
+              <button className={styles.quantityBtn} onClick={decQuantity}>-</button>
+              <input className={styles.quantityInput} value={quantity} readOnly/>
+              <button className={styles.quantityBtn} onClick={incQuantity}>+</button>
+            </div>
+            <button className={styles.addToCartBtn}>Add to cart</button>
+          </p>
+        </div>
       </div>
 
       {/*reviews section*/}
@@ -483,13 +572,15 @@ const confirmDeleteReview = () => (
       { loadingAddRev && <CircularProgress color='inherit'/> }
       { loadingDelRev && <CircularProgress color='inherit'/> }
       { loadingUpdtRev && <CircularProgress color='inherit'/> }
+      { loadingShipto && <CircularProgress color='inherit'/> }
+      {/* loadingSubcities && <CircularProgress color='inherit'/> */}
       { reviewList.length > 0 ? (
         <>
           {
            reviewList.map((review, idx) => {
              return (
                <>
-                 <Card style = {{ display: loadingReviews || loadingAddRev || loadingDelRev || loadingUpdtRev ? ('none') : (null) }} className={styles.reviewContainerCard} key={idx}>
+                 <Card style = {{ display: loadingReviews || loadingAddRev || loadingDelRev || loadingUpdtRev || loadingShipto || loadingSubcities ? ('none') : (null) }} className={styles.reviewContainerCard} key={idx}>
                    <div className={styles.reviewContainer}>
                      {review.userId[0]._id === product.seller._id ? (
                        <div>{review.userId[0].full_name} (Seller)</div>

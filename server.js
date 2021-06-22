@@ -25,6 +25,10 @@ const devProxy = {
     target,
     changeOrigin: true,
   },
+  '/api/shipto': {
+    target,
+    changeOrigin: true,
+  },
 };
 
 // const port = parseInt(process.env.PORT, 10) || 3000;
