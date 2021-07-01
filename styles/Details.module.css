@@ -18,12 +18,14 @@
   justify-content: flex-start;
   flex-direction: column;
   max-width: 40rem;
+  background-color: #ffffff;
   margin: 2rem
 }
 
 .containerRight {
   display: flex;
   flex-wrap: wrap;
+  background-color: #ffffff;
   max-width: 35rem;
   justify-content: flex-start;
   flex-direction: column;
@@ -51,7 +53,7 @@
 }
 
 .addToCartBtn:hover {
-  background-color: #ffffff;
+  /*background-color: #ffffff;*/
   color: #2e2e2e;
   border-color: #2e2e2e;
   border: solid;
@@ -61,7 +63,7 @@
 .quantityContainer{
   height: 2.5rem;
   font-size: 1.3rem;
-  background-color: #ffffff;
+  /*background-color: #ffffff;*/
   border: solid;
   border-radius: 2rem;
   width: 8rem;
@@ -69,7 +71,6 @@
   color: #2e2e2e;
   display: flex;
   justify-content: space-around;
-  background-color: #ffffff;
 }
 
 .quantityBtn{

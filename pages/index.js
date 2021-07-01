@@ -114,7 +114,7 @@ const Home = () => {
                         component="img"
                         alt={products.name}
                         height="150"
-                        image={`/api/product/photo/${products._id}`}
+                        image={products.photo}
                         title={products.name}
                       />
                       <CardContent>
@@ -139,7 +139,7 @@ const Home = () => {
                           component="img"
                           alt={products.name}
                           height="250"
-                          image={`/api/product/photo/${products._id}`}
+                          image={`${products.photo}`}
                           title={products.name}
                         />
                       <CardContent>

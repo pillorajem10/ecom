@@ -403,7 +403,7 @@ const showErrorForUpdtRev = () => (
       <Head>
         <title>{product.name}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta property="og:image" content={`/api/product/photo/${product._id}`} key="ogimage" />
+        <meta property="og:image" content={product.photo} key="ogimage" />
         <meta property="og:url" content="https://jempillora.vercel.app/" key="ogurl" />
         <meta property="og:site_name" content="Jem Pillora" key="ogsitename" />
         <meta property="og:title" content="Jem Pillora" key="ogtitle" />
@@ -415,108 +415,112 @@ const showErrorForUpdtRev = () => (
         {successUpdtRev && showSuccessForUpdtRev()}
         {errorUpdtRev && showErrorForUpdtRev()}
         <div className={styles.containerLeft}>
-          <CardMedia
-            component="img"
-            alt={product.name}
-            height="550"
-            image={`/api/product/photo/${product._id}`}
-            title={product.name}
-          />
-          <div style={{marginTop: "2rem"}}>
-            <div style={{fontSize: "1.5rem"}}>Product Specifacations:</div>
-            <p><b>Category:</b> {product.category.name}</p>
-            <p><b>Brand:</b> {product.brand.name}</p>
-            <p><b>Stock:</b> {product.quantity}</p>
-            <p><b>Shipped From:</b> {product.shippedFrom}</p>
-            <div style={{fontSize: "1.5rem"}}>Product Description:</div>
-            <p>{product.description}</p>
+          <div style={{margin: "1rem"}}>
+            <CardMedia
+              component="img"
+              alt={product.name}
+              height="550"
+              image={product.photo}
+              title={product.name}
+            />
+            <div style={{marginTop: "2rem"}}>
+              <div style={{fontSize: "1.5rem"}}>Product Specifacations:</div>
+              <p><b>Category:</b> {product.category.name}</p>
+              <p><b>Brand:</b> {product.brand.name}</p>
+              <p><b>Stock:</b> {product.quantity}</p>
+              <p><b>Shipped From:</b> {product.shippedFrom}</p>
+              <div style={{fontSize: "1.5rem"}}>Product Description:</div>
+              <p>{product.description}</p>
+            </div>
           </div>
         </div>
         <div className={styles.containerRight}>
-          <div className={styles.prodName}>{product.name}</div>
-          <div className={styles.ratingsContainer}>
-            <div style={{fontSize: "1.2rem"}}>{product.rating.toFixed(1)}</div>
-            <Rating precision={.2} readOnly value={product.rating.toFixed(1)}/> <div style = {{fontSize: "1.5rem"}}/>
-            <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Ratings:</b> {product.numReviews}</div>
-            <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Sold:</b> {product.sold}</div>
-          </div>
-          <p className={styles.price}>₱{product.price}</p>
-          <p><b>Seller: </b>{product.seller.full_name}</p>
-          <p><b>Shipping:</b></p>
-          <div className={styles.actionContainer}>
-            <FormControl className={(classes.margin, classes.shipping)}>
-              <Select
-                native
-                required
-                onChange={selectShipToHandler}
-                variant="outlined"
-                value={selectedShipTo}
-                inputProps={{
-                  name: 'shipTo',
-                  id: 'shipTo',
-                }}
-              >
-                <option value="">Ship To</option>
-                {
-                 shiptoList.map((shipTo, index) => (
-                   <option key={index} value={shipTo._id}>
-                      {shipTo.name}
-                   </option>
-                ))}
-              </Select>
-            </FormControl>
-            { selectedShipTo === "" ? (
-              <FormControl className={(classes.margin, classes.shipping)} disabled>
-                <Select
-                  native
-                  required
-                  style={{marginLeft: "1rem"}}
-                  variant="outlined"
-                  inputProps={{
-                    name: 'subCity',
-                    id: 'subCity',
-                  }}
-                >
-                  <option value = "">Select City</option>
-                  {
-                   subcityList.map((subcity, index) => (
-                     <option key={index} value={subcity._id}>
-                        {subcity.name}
-                     </option>
-                  ))}
-                </Select>
-              </FormControl>
-            ) : (
+          <div style={{margin: "1rem"}}>
+            <div className={styles.prodName}>{product.name}</div>
+            <div className={styles.ratingsContainer}>
+              <div style={{fontSize: "1.2rem"}}>{product.rating.toFixed(1)}</div>
+              <Rating precision={.2} readOnly value={product.rating.toFixed(1)}/> <div style = {{fontSize: "1.5rem"}}/>
+              <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Ratings:</b> {product.numReviews}</div>
+              <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Sold:</b> {product.sold}</div>
+            </div>
+            <p className={styles.price}>₱{product.price}</p>
+            <p><b>Seller: </b>{product.seller.full_name}</p>
+            <p><b>Shipping:</b></p>
+            <div className={styles.actionContainer}>
               <FormControl className={(classes.margin, classes.shipping)}>
                 <Select
                   native
                   required
-                  style={{marginLeft: "1rem"}}
+                  onChange={selectShipToHandler}
                   variant="outlined"
+                  value={selectedShipTo}
                   inputProps={{
-                    name: 'subCity',
-                    id: 'subCity',
+                    name: 'shipTo',
+                    id: 'shipTo',
                   }}
                 >
-                  <option value = "">Select City</option>
+                  <option value="">Ship To</option>
                   {
-                   subcityList.map((subcity, index) => (
-                     <option key={index} value={subcity._id}>
-                        {subcity.name}
+                   shiptoList.map((shipTo, index) => (
+                     <option key={index} value={shipTo._id}>
+                        {shipTo.name}
                      </option>
                   ))}
                 </Select>
               </FormControl>
-            ) }
-          </div>
-          <p className={styles.actionContainer}>
-            <div className={styles.quantityContainer}>
-              <button className={styles.quantityBtn} onClick={decQuantity}>-</button>
-              <input className={styles.quantityInput} value={quantity} readOnly/>
-              <button className={styles.quantityBtn} onClick={incQuantity}>+</button>
+              { selectedShipTo === "" ? (
+                <FormControl className={(classes.margin, classes.shipping)} disabled>
+                  <Select
+                    native
+                    required
+                    style={{marginLeft: "1rem"}}
+                    variant="outlined"
+                    inputProps={{
+                      name: 'subCity',
+                      id: 'subCity',
+                    }}
+                  >
+                    <option value = "">Select City</option>
+                    {
+                     subcityList.map((subcity, index) => (
+                       <option key={index} value={subcity._id}>
+                          {subcity.name}
+                       </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : (
+                <FormControl className={(classes.margin, classes.shipping)}>
+                  <Select
+                    native
+                    required
+                    style={{marginLeft: "1rem"}}
+                    variant="outlined"
+                    inputProps={{
+                      name: 'subCity',
+                      id: 'subCity',
+                    }}
+                  >
+                    <option value = "">Select City</option>
+                    {
+                     subcityList.map((subcity, index) => (
+                       <option key={index} value={subcity._id}>
+                          {subcity.name}
+                       </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) }
             </div>
-            <button className={styles.addToCartBtn}>Add to cart</button>
-          </p>
+            <p className={styles.actionContainer}>
+              <div className={styles.quantityContainer}>
+                <button className={styles.quantityBtn} onClick={decQuantity}>-</button>
+                <input className={styles.quantityInput} value={quantity} readOnly/>
+                <button className={styles.quantityBtn} onClick={incQuantity}>+</button>
+              </div>
+              <button className={styles.addToCartBtn}>Add to cart</button>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -538,7 +542,6 @@ const showErrorForUpdtRev = () => (
              <div>
               <Box
                 boxShadow={0}
-                bgcolor="background.paper"
                 m={0}
                 p={0}
                 style={{ width: '100%', height: '100&' }}
@@ -563,8 +566,8 @@ const showErrorForUpdtRev = () => (
       </div>
     </>
     ) : (
-     <div style={{fontSize: "1.5rem"}} className = 'reviews1'>
-       <Link href = "/signin">Please Sign-in to write a review.</Link>
+     <div style={{fontSize: "1.5rem", marginLeft: "1rem"}} className = 'reviews1'>
+       <Link href = "/signin"><span style={{color: "orange"}}>Please Sign-in to write a review.</span></Link>
      </div>
     )}
       <div>
@@ -680,7 +683,6 @@ const showErrorForUpdtRev = () => (
               <div>
                <Box
                  boxShadow={0}
-                 bgcolor="background.paper"
                  m={0}
                  p={0}
                  style={{ width: '100%', height: '100&' }}
@@ -732,7 +734,7 @@ const showErrorForUpdtRev = () => (
                         component="img"
                         alt={productList.name}
                         height="150"
-                        image={`/api/product/photo/${productList._id}`}
+                        image={product.photo}
                         title={productList.name}
                       />
                       <CardContent>
@@ -757,7 +759,7 @@ const showErrorForUpdtRev = () => (
                           component="img"
                           alt={productList.name}
                           height="250"
-                          image={`/api/product/photo/${productList._id}`}
+                          image={productList.photo}
                           title={productList.name}
                         />
                       <CardContent>
