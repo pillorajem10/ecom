@@ -5,3 +5,16 @@
   align-items: stretch;
   align-content: center;
 }
+
+.ratingsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: .5rem;
+}
+
+.soldAndShippedFromCont {
+  display: flex;
+  flex-direction: column;
+  margin-top: .5rem;
+}

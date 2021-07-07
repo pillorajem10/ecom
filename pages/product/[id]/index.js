@@ -67,7 +67,19 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   shipping: {
-    width: '45%',
+    width: '50%',
+    fontSize: '.5rem',
+    '& label.Mui-focused': {
+      color: '#2e2e2e',
+    },
+    '& .MuiOutlinedInput-root': {
+        '&.Mui-focused fieldset': {
+            borderColor: '#2e2e2e',
+        },
+    },
+  },
+  variant: {
+    width: '100%',
     fontSize: '.5rem',
     '& label.Mui-focused': {
       color: '#2e2e2e',
@@ -283,7 +295,6 @@ const ProductDetails = ({ product }) => {
     handleSubcityList();
     handleReviewsList();
     handleShipToList();
-    console.log('SLECTED SHIP TO', selectedShipTo)
   }, [handleProductList, handleReviewsList, handleShipToList, handleSubcityList]);
 
   const submitHandler = (e) => {
@@ -443,7 +454,40 @@ const showErrorForUpdtRev = () => (
               <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Ratings:</b> {product.numReviews}</div>
               <div style={{fontSize: "1rem", marginLeft: "1rem"}}><b>Sold:</b> {product.sold}</div>
             </div>
-            <p className={styles.price}>₱{product.price}</p>
+            <p className={styles.price}>
+            {
+              product.minPrice === product.maxPrice ? (
+                <>₱{product.minPrice}</>
+              ) : (
+                <>₱{product.minPrice} - ₱{product.maxPrice}</>
+              )
+            }
+            </p>
+            <p><b>Variants:</b></p>
+            {product.variants.length > 1 ? (
+              <FormControl className={(classes.margin, classes.variant)}>
+                <Select
+                  native
+                  required
+                  variant="outlined"
+                  inputProps={{
+                    name: 'variant',
+                    id: 'variant',
+                  }}
+                >
+                  <option value = "">Select Variant</option>
+                  {
+                   product.variants.map((variant, index) => (
+                     <option key={index} value={variant._id}>
+                        {variant.variantName}
+                     </option>
+                  ))}
+                </Select>
+              </FormControl>
+              ) : (
+                null
+              )
+            }
             <p><b>Seller: </b>{product.seller.full_name}</p>
             <p><b>Shipping:</b></p>
             <div className={styles.actionContainer}>
@@ -752,33 +796,41 @@ const showErrorForUpdtRev = () => (
                     </Card>
                   </Link>
                   :
-
                   <Link href = {`/product/${productList._id}`} key={idx}>
                     <Card key={productList.name} className={classes.root1}>
                         <CardMedia
                           component="img"
                           alt={productList.name}
-                          height="250"
-                          image={productList.photo}
+                          height="200"
+                          image={`${productList.photo}`}
                           title={productList.name}
                         />
                       <CardContent>
-                        <Typography gutterBottom variant="h6">
-                          <Box
-                            component="div"
-                            my={2}
-                            textOverflow="ellipsis"
-                            overflow="hidden"
-                          >
-                            {productList.name}
-                          </Box>
+                        <Typography style={{fontSize: '1.2rem'}} gutterBottom component="div">
+                          {productList.name}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                          <Rating precision={.2} readOnly value={productList.rating.toFixed(1)}/> <div style = {{fontSize: "1.5rem"}}>{productList.rating.toFixed(1)}</div>
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                          <div style = {{fontSize: "1rem"}}>Number of reviews: {productList.numReviews}</div>
-                        </Typography>
+                        {
+                          productList.minPrice === productList.maxPrice ? (
+                            <Typography variant="body2" color="textSecondary" component="div">
+                              <div style = {{fontSize: "1rem"}}>₱{productList.minPrice}</div>
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="textSecondary" component="div">
+                              <div style = {{fontSize: "1rem"}}>₱{productList.minPrice} - ₱{productList.maxPrice}</div>
+                            </Typography>
+                          )
+                        }
+                        <div variant="body2" className={styles.ratingsContainer} component="div">
+                          <div style = {{fontSize: "1rem"}}>{productList.rating.toFixed(1)}</div><div style={{marginLeft: ".5rem"}}><Rating precision={.2} readOnly value={productList.rating.toFixed(1)}/></div>
+                        </div>
+                        <div className={styles.soldAndShippedFromCont}>
+                          <Typography variant="body2" color="textSecondary" component="div">
+                            <div style = {{fontSize: "1rem"}}>{productList.sold} sold</div>
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary" component="div">
+                            <div style = {{fontSize: "1rem"}}>{productList.shippedFrom}</div>
+                          </Typography>
+                        </div>
                       </CardContent>
                     </Card>
                   </Link>

@@ -5,6 +5,13 @@
   flex-wrap: wrap;
 }
 
+.variantContainer {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
 .ratingsContainer {
   display: flex;
   justify-content: flex-start;

@@ -35,7 +35,6 @@ const useStyles = makeStyles({
   root: {
     maxHeight: "17rem",
     maxWidth: "8rem",
-    marginLeft: '.7rem',
     whiteSpace: 'nowrap',
     marginTop: '1rem'
   },
@@ -43,7 +42,6 @@ const useStyles = makeStyles({
     maxHeight: "26.5rem",
     maxWidth: "12rem",
     marginTop: '1rem',
-    marginLeft: '.7rem',
     whiteSpace: 'nowrap',
     cursor: 'pointer',
   },
@@ -70,31 +68,6 @@ const Home = () => {
       <Head>
         <title>Jem Pillora</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/*
-          <meta name="description" content="Full-stack developer" />
-          <meta name="keywords" content="full-stack developer, MERN stack developer, freelance developer" />
-          <meta
-            property="og:title"
-            content="JemPillora"
-            key="title"
-          />
-          <meta
-            property="og:description"
-            content="Full-stack developer that can create your website for your business"
-            key="description"
-          />
-          <meta
-            property="og:image"
-            content="%PUBLIC_URL%/favicon.jpeg"
-            key="image"
-          />
-          <meta
-            property="og:site_name"
-            content="JemPillora"
-          />
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://jempillora.vercel.app/" key="og:url"/>
-        */}
         <meta property="og:image" content={logo} key="ogimage" />
         <meta property="og:url" content="https://jempillora.vercel.app/" key="ogurl" />
         <meta property="og:site_name" content="Jem Pillora" key="ogsitename" />
@@ -132,33 +105,41 @@ const Home = () => {
                     </Card>
                   </Link>
                   :
-
                   <Link href = {`/product/${products._id}`} key={idx}>
                     <Card key={products.name} className={classes.root1}>
                         <CardMedia
                           component="img"
                           alt={products.name}
-                          height="250"
+                          height="200"
                           image={`${products.photo}`}
                           title={products.name}
                         />
                       <CardContent>
-                        <Typography gutterBottom variant="h6">
-                          <Box
-                            component="div"
-                            my={2}
-                            textOverflow="ellipsis"
-                            overflow="hidden"
-                          >
-                            {products.name}
-                          </Box>
+                        <Typography gutterBottom component="div">
+                          {products.name}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                          <Rating precision={.2} readOnly value={products.rating.toFixed(1)}/> <div style = {{fontSize: "1.5rem"}}>{products.rating.toFixed(1)}</div>
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                          <div style = {{fontSize: "1rem"}}>Number of reviews: {products.numReviews}</div>
-                        </Typography>
+                        {
+                          products.minPrice === products.maxPrice ? (
+                            <Typography variant="body2" color="textSecondary" component="div">
+                              <div style = {{fontSize: "1rem"}}>₱{products.minPrice}</div>
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="textSecondary" component="div">
+                              <div style = {{fontSize: "1rem"}}>₱{products.minPrice} - ₱{products.maxPrice}</div>
+                            </Typography>
+                          )
+                        }
+                        <div variant="body2" className={styles.ratingsContainer} component="div">
+                          <div style = {{fontSize: "1rem"}}>{products.rating.toFixed(1)}</div><div style={{marginLeft: ".5rem"}}><Rating precision={.2} readOnly value={products.rating.toFixed(1)}/></div>
+                        </div>
+                        <div className={styles.soldAndShippedFromCont}>
+                          <Typography variant="body2" color="textSecondary" component="div">
+                            <div style = {{fontSize: "1rem"}}>{products.sold} sold</div>
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary" component="div">
+                            <div style = {{fontSize: "1rem"}}>{products.shippedFrom}</div>
+                          </Typography>
+                        </div>
                       </CardContent>
                     </Card>
                   </Link>
